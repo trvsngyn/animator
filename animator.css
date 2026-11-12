@@ -1,0 +1,603 @@
+/* All styling for the Animator app. The .gleam files only attach class names. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+/* ── Layout: two columns ─────────────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: #1a1a2e;
+  color: #d4c5a0;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+}
+
+/* Left column: the code editor. */
+.code-col {
+  width: 42%;
+  min-width: 320px;
+  max-width: 720px;
+  flex-shrink: 0;
+  display: flex;
+  border-right: 1px solid #3a3a5e;
+  background: #0f0f1e;
+}
+
+/* The code column stays in the DOM when collapsed, so CodeMirror keeps its
+   state; hiding it gives the right column the full width. */
+.app.code-hidden .code-col { display: none; }
+
+/* A small emoji button (the code pane's collapse toggle, and the playback
+   controls once they exist). */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2a4a;
+  color: #d4c5a0;
+  border: 1px solid #4a4a8a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 5px 8px;
+}
+.icon-btn:hover { background: #3a3a5e; }
+/* The playback button for the current state (playing or paused). */
+.icon-btn.active { background: #4a4a8a; border-color: #8a8aca; color: #fff; }
+
+/* ── Code panel (left column) ───────────────────────────────────────────── */
+
+.code-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #1a1a3e;
+  border-bottom: 1px solid #3a3a5e;
+}
+/* The buttons on the right of the header. */
+.code-actions { display: flex; align-items: center; gap: 6px; }
+.code-title {
+  white-space: nowrap;
+  color: #e8d8b0;
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* Wrapper holding the editor. */
+.code-editor-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+/* CodeMirror mount node: grows to fill the panel. */
+.code-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background: #0d0d1a;
+}
+.code-editor .cm-editor { width: 100%; height: 100%; }
+
+/* Collapsible reference of the built-ins available to draw functions. */
+.reference {
+  margin: 8px 14px 0;
+  border: 1px solid #3a3a5e;
+  border-radius: 4px;
+  background: #0d0d1a;
+  overflow: hidden;
+}
+.reference-summary {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #b8a888;
+  font-family: monospace;
+  font-size: 12px;
+  user-select: none;
+}
+.reference-summary:hover { color: #e8d8b0; }
+.reference-body {
+  padding: 4px 12px 10px;
+  border-top: 1px solid #3a3a5e;
+}
+.reference-group { margin-top: 8px; }
+.reference-group-title {
+  color: #8a8aca;
+  font-family: monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.reference-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 1px 0;
+}
+.reference-sig {
+  color: #89ddff;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+.reference-desc { color: #6a7a8a; font-size: 11px; }
+
+/* ── Animation area (right column) ──────────────────────────────────────── */
+
+.canvas-area {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a14;
+  container-type: size;
+}
+
+/* The bottom-right corner of the screen: the sliders, with the code's error
+   stacked right above them while the code is broken. */
+.corner {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  width: min(280px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* The panel of sliders. */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #1a1a3e;
+  border: 1px solid #3a3a5e;
+  border-radius: 4px;
+}
+/* The row of play, pause and reset buttons above the sliders. */
+.playback { display: flex; gap: 6px; }
+.playback .icon-btn { flex: 1; }
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 12px;
+}
+/* Fixed widths either side, so the two sliders line up and don't shift as
+   their numbers change. */
+.control-name { width: 7ch; color: #b8a888; }
+/* The bar holding the menu of drawings, under the code panel's header. */
+.drawing-bar {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: #14142e;
+  border-bottom: 1px solid #3a3a5e;
+}
+/* The menu of drawings. */
+.control-select {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 6px;
+  background: #0d0d1a;
+  color: #e8d8b0;
+  border: 1px solid #4a4a8a;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+}
+.control-slider { flex: 1; min-width: 0; accent-color: #8a8aca; }
+.control-value { width: 5ch; text-align: right; color: #e8d8b0; }
+
+/* The interpreter's List(Path) (or its error), shown as text before the
+   animation pane is built. */
+.output {
+  align-self: stretch;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cfe3ff;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* Leave room for the reveal button, which only overlays this pane while the
+   code column is hidden. */
+.app.code-hidden .output { padding-top: 48px; }
+
+/* Button that reveals the code column again when it is hidden. */
+.reveal-code {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+/* A centred square that fits the (possibly non-square) animation area. Give your
+   <canvas> this class, so that drawings aren't stretched. */
+.canvas {
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+}
+
+/* The code's error, in a small red box right above the sliders while the code
+   is broken. */
+.error-box {
+  max-height: 40vh;
+  overflow: auto;
+  padding: 8px 12px;
+  background: #3a1016;
+  border: 1px solid #e05561;
+  border-radius: 4px;
+  color: #ffd7da;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+
+/* ── Protect John DeNero! (the game) ───────────────────────────────────────────────── */
+
+/* The game has a softer look than the rest of the app: a rounded font, round
+   corners, pastel colours and no hard borders. */
+.game, .header-btn {
+  --game-font: "Nunito", ui-rounded, "Quicksand", "Segoe UI", system-ui, sans-serif;
+  --game-bg: #23263a;
+  --game-panel: #2c304a;
+  --game-card: #363b5a;
+  --game-card-hover: #424870;
+  --game-text: #f1edf9;
+  --game-muted: #aeacd0;
+  --game-lavender: #bdb0f7;
+  --game-mint: #a5e6c1;
+  --game-peach: #ffcfae;
+  --game-rose: #f7aab8;
+}
+
+/* The button beside "draw code" that opens the game. */
+.header-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #bdb0f7, #f7aab8);
+  color: #2a2440;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--game-font);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(189, 176, 247, 0.35);
+}
+.header-btn:hover { background: linear-gradient(135deg, #cdc3fa, #fac0cb); }
+
+/* The game lies over the whole app: levels and the table of items on the
+   left, and the field on the right. */
+.game {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  background: var(--game-bg);
+  color: var(--game-text);
+  font-family: var(--game-font);
+  font-size: 14px;
+}
+.game-side {
+  width: 320px;
+  flex-shrink: 0;
+  overflow: auto;
+  padding: 18px;
+  background: var(--game-panel);
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  scrollbar-width: thin;
+  scrollbar-color: #4a5078 transparent;
+}
+.game-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.game-title { font-size: 20px; font-weight: 800; }
+.game-side h3 {
+  margin: 20px 0 10px;
+  color: var(--game-lavender);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: pre;
+}
+.game-hint { margin-bottom: 10px; color: var(--game-muted); font-size: 12.5px; line-height: 1.45; }
+
+/* Every button in the game is a soft pill. */
+.game .icon-btn {
+  padding: 7px 14px;
+  background: var(--game-card);
+  color: var(--game-text);
+  border: none;
+  border-radius: 999px;
+  font-family: var(--game-font);
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 0.15s, transform 0.1s;
+}
+.game .icon-btn:hover:not(:disabled) { background: var(--game-card-hover); }
+.game .icon-btn:active:not(:disabled) { transform: scale(0.96); }
+.game .icon-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* The levels. A locked level is shaded out. */
+.game-levels { display: flex; flex-direction: column; gap: 6px; }
+.game-level {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--game-card);
+  color: var(--game-text);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  font-family: var(--game-font);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.game-level:hover:not(:disabled) { background: var(--game-card-hover); }
+.game-level.current { border-color: var(--game-lavender); }
+.game-level:disabled { cursor: default; }
+.game-level.locked { opacity: 0.38; cursor: not-allowed; }
+.game-level-mark { width: 1.4em; color: var(--game-mint); font-weight: 800; text-align: center; }
+
+/* The table of items, dragged onto the field. */
+.game-table { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.game-table-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 7px;
+  background: var(--game-card);
+  color: var(--game-text);
+  border: none;
+  border-radius: 16px;
+  font-family: var(--game-font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.game-table-item:hover { background: var(--game-card-hover); transform: translateY(-1px); }
+.game-table-item.unusable { opacity: 0.4; cursor: not-allowed; }
+.game-table-item.unusable:hover { background: var(--game-card); transform: none; }
+.game-table-icon { width: 46px; height: 46px; overflow: visible; }
+
+/* Above the field: the message and the time left, and the buttons. */
+.game-main {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.game-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--game-panel);
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}
+.game-timer { height: 8px; background: var(--game-card); border-radius: 999px; overflow: hidden; }
+.game-timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--game-mint), var(--game-lavender));
+  border-radius: 999px;
+}
+.game-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.game-toolbar-gap { flex: 1; }
+.game .icon-btn.game-start { background: var(--game-mint); color: #1f4a33; }
+.game .icon-btn.game-start:hover:not(:disabled) { background: #b8eccf; }
+.game-selected { color: var(--game-peach); font-weight: 800; }
+
+/* The field. */
+.game-stage {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  touch-action: none;
+  user-select: none;
+}
+.game-sky { fill: #3b4275; }
+.game-moon { fill: #fdf3d8; opacity: 0.9; }
+.game-cloud { fill: #ffffff; opacity: 0.12; }
+.game-ground { fill: #7dbf95; }
+
+.game-item { cursor: grab; }
+.game-item.selected > * { filter: drop-shadow(0 0 6px #ffcfae); }
+.game-ghost { pointer-events: none; opacity: 0.7; }
+.game-ghost.blocked { opacity: 0.45; filter: grayscale(1) drop-shadow(0 0 6px #f7aab8); }
+.game-ghost.fits > * { filter: drop-shadow(0 0 6px #a5e6c1); }
+
+/* The items, made only of lines, like the paths of a drawing. Every line of
+   an item takes clicks, and so does the space inside its outline. */
+.game-item * { pointer-events: all; }
+.game-item .field, .game-item .fan-wind, .game-item .fan-streak { pointer-events: none; }
+.solid, .detail, .black-hole-ring, .black-hole-core, .repulsor-wave, .repulsor-core,
+.fan-body, .fan-blade, .fan-hub, .cloud-puff, .ice, .ice-flake, .flower-stem,
+.petal, .flower-centre {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.detail { stroke-width: 3; }
+.wood { stroke: #e8c49c; }
+.crate { stroke: #f0d3a8; }
+.stone { stroke: #c9cde6; }
+.dome { stroke: #f7aab8; }
+.curved { stroke: #8fd3e8; }
+.bouncy { stroke: #a5e6c1; }
+.bubble { stroke: #bfe4ff; }
+.field { fill: none; stroke-width: 2; stroke-dasharray: 6 8; }
+.black-hole-reach { stroke: rgba(189, 176, 247, 0.5); }
+.black-hole-ring { stroke: #bdb0f7; stroke-dasharray: 18 10; }
+.black-hole-ring.inner { stroke: #8f80d8; stroke-dasharray: 10 8; }
+.black-hole-core { stroke: #f1edf9; stroke-width: 5; }
+.repulsor-reach { stroke: rgba(255, 207, 174, 0.55); }
+.repulsor-wave { stroke: #ffcfae; opacity: 0.7; }
+.repulsor-core { stroke: #ffcfae; }
+.fan-wind { fill: none; stroke: rgba(200, 230, 255, 0.35); stroke-width: 2; stroke-dasharray: 6 8; }
+.fan-streak { stroke: rgba(220, 240, 255, 0.55); stroke-width: 3; stroke-linecap: round; }
+.fan-body { stroke: #c9cde6; }
+.fan-blade { stroke: #e6e6f0; stroke-width: 6; }
+.fan-hub { stroke: #c9cde6; }
+.cloud-puff { stroke: rgba(240, 240, 255, 0.75); stroke-width: 3; }
+.ice { stroke: #c8ecff; }
+.ice-flake { stroke: #ffffff; stroke-width: 3; }
+.flower-reach { stroke: rgba(247, 170, 184, 0.45); }
+.flower-stem { stroke: #a5e6c1; }
+.petal { stroke: #f7aab8; stroke-width: 3; }
+.flower-centre { stroke: #ffdf8c; stroke-width: 3; }
+
+/* The stickman, and the arrows and bees. */
+.game-man { stroke: #fdf8ee; stroke-width: 5; stroke-linecap: round; fill: none; }
+.game-man circle { fill: #fdf8ee; stroke: none; }
+.game-man.hit { stroke: #f7aab8; }
+.game-man.hit circle { fill: #f7aab8; }
+/* His cartoon face: hair, glasses and a smile, drawn over the head. */
+.game-man .face-hair { fill: #6b5a4e; stroke: none; }
+.game-man .face-line { stroke: #2a2440; stroke-width: 1.6; fill: none; }
+.game-man .face-glass { stroke: #2a2440; stroke-width: 1.6; fill: rgba(255, 255, 255, 0.35); }
+.game-man .face-eye { fill: #2a2440; stroke: none; }
+.game-man-name {
+  fill: #f1edf9;
+  font-size: 13px;
+  font-weight: 800;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #3b4275;
+  stroke-width: 4px;
+}
+.game-arrow { pointer-events: none; }
+.arrow-shaft { stroke: #e9c9a4; stroke-width: 3; stroke-linecap: round; }
+.arrow-head { fill: #e6e6f0; }
+.arrow-fletching { fill: #f7aab8; }
+.game-bee { pointer-events: none; }
+.bee-body { fill: #ffdf8c; stroke: #5c5b7a; stroke-width: 1.5; }
+.bee-stripe { stroke: #5c5b7a; stroke-width: 2.5; }
+.bee-wing { fill: rgba(255, 255, 255, 0.75); }
+.bee-eye { fill: #2a2440; }
+.game-bee.stuck .bee-body { fill: #cfe8ff; }
+
+/* The small green box in the middle of the screen when a level is beaten, and
+   the red one when the stickman is hit. */
+.game-complete, .game-died {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 28px;
+  border-radius: 22px;
+  text-align: center;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+.game-complete { background: #a5e6c1; color: #1f4a33; }
+.game-died { background: #f7aab8; color: #5a1f2b; }
+.game-complete-title { font-size: 20px; font-weight: 800; }
+.game-complete-detail { font-size: 14px; font-weight: 600; opacity: 0.85; }
+.game .game-complete .icon-btn { background: #2f6b4a; color: #fff; }
+.game .game-complete .icon-btn:hover { background: #3a8059; }
+.game .game-died .icon-btn { background: #8a3344; color: #fff; }
+.game .game-died .icon-btn:hover { background: #a04055; }
+
+/* The Tutorial and "Back to drawings" buttons beside the title. */
+.game-title-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* The Free field's two sliders, in the row of buttons above the field. */
+.game-free {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  padding: 4px 14px;
+  background: var(--game-panel);
+  border-radius: 999px;
+}
+.game-free .game-setting { gap: 8px; font-weight: 700; }
+.game-free .game-setting > span:first-child { width: auto; }
+.game-free input { width: 140px; flex: none; }
+.game-free .game-value { width: 3.5em; }
+
+/* The tutorial: a soft card near the top of the field. */
+.game-tutorial {
+  position: absolute;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 18;
+  width: min(440px, calc(100% - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  background: #e6defc;
+  color: #2a2440;
+  border-radius: 22px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+.game-tutorial p { font-size: 14px; font-weight: 600; line-height: 1.45; }
+.game-tutorial-step {
+  color: #6b5fb0;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.game-tutorial-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+.game .game-tutorial .icon-btn { background: #cfc3f5; color: #2a2440; }
+.game .game-tutorial .icon-btn:hover { background: #bdb0f7; }
+.game .game-tutorial .icon-btn.game-start { background: #6b5fb0; color: #fff; }
+.game .game-tutorial .icon-btn.game-start:hover { background: #7d70c4; }
